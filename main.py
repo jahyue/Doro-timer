@@ -26,7 +26,6 @@ def update_timer():
         else:
             mixer.Sound("audio/alarm.mp3").play()
             switch_timer()
-
         main.after(1000, update_timer)
 
 def toggle_timer():
@@ -44,7 +43,7 @@ def rename_task(event,checkbox):
     dialog = ctk.CTkInputDialog(
         text="Rename Task",
         title="New task name:",
-        initialvalue=checkbox.cget("text")  
+        
     )
     new_name = dialog.get_input()
     if new_name:
