@@ -44,6 +44,7 @@ def rename_task(event,checkbox):
         text="Rename Task",
         title="New task name:",
         
+    
     )
     new_name = dialog.get_input()
     if new_name:
