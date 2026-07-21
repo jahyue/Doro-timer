@@ -1,7 +1,7 @@
 import os
 import tkinter as tk
 import customtkinter as ctk
-from tkinter import simpledialog
+from pygame import mixer
 
 ctk.set_appearance_mode('Dark')
 WORK_TIME = 25 * 60
@@ -12,7 +12,7 @@ task_spacing = 35
 time_left = WORK_TIME
 running = False
 on_break = False
-
+mixer.init()
 def update_timer():
     global time_left
 
@@ -24,6 +24,7 @@ def update_timer():
         if time_left > 0:
             time_left -= 1
         else:
+            mixer.Sound("audio/alarm.mp3").play()
             switch_timer()
 
         main.after(1000, update_timer)
@@ -43,7 +44,7 @@ def rename_task(event,checkbox):
     dialog = ctk.CTkInputDialog(
         text="Rename Task",
         title="New task name:",
-    
+        initialvalue=checkbox.cget("text")  
     )
     new_name = dialog.get_input()
     if new_name:
@@ -91,7 +92,6 @@ def add_task():
 
         task_count += 1
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 main = ctk.CTk()
