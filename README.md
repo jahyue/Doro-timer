@@ -7,7 +7,9 @@ A Pomodoro timer made entirely in python
 
 ## Features
 
-* Regular pomodor timer with work blocks and break blocks
+* Regular pomodor timer with work blocks and break blocks 
+
+* an alarm to notify when the timer ends
 
 * To do list with tasks that can be checked off and renamed with a double click
 

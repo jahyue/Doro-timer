@@ -4,7 +4,7 @@ import customtkinter as ctk
 from pygame import mixer
 
 ctk.set_appearance_mode('Dark')
-WORK_TIME = 1 * 60
+WORK_TIME = 25 * 60
 BREAK_TIME = 5 * 60
 task_count = 1          
 task_start_y = 94      
