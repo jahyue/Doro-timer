@@ -1,8 +1,9 @@
 import os
 import tkinter as tk
-from tkinter import ttk
-from PIL import Image, ImageTk
+import customtkinter as ctk
 from tkinter import simpledialog
+
+ctk.set_appearance_mode('Dark')
 WORK_TIME = 25 * 60
 BREAK_TIME = 5 * 60
 task_count = 1          
@@ -18,7 +19,7 @@ def update_timer():
     if running:
         mins = time_left // 60
         secs = time_left % 60
-        timer_label.config(text=f"{mins:02}:{secs:02}")
+        timer_label.configure(text=f"{mins:02}:{secs:02}")
 
         if time_left > 0:
             time_left -= 1
@@ -32,64 +33,70 @@ def toggle_timer():
 
     if running:
         running = False
-        pressplay.config(text="Start")
+        pressplay.configure(text="Start")
     else:
         running = True
-        pressplay.config(text="Pause")
+        pressplay.configure(text="Pause")
         update_timer()
-def rename_task(checkbox):
-    new_name = simpledialog.askstring(
-        "Rename Task",
-        "New task name:",
-        initialvalue=checkbox.cget("text")
+def rename_task(event,checkbox):
+    event.widget.after(100, lambda: checkbox.deselect())
+    dialog = ctk.CTkInputDialog(
+        text="Rename Task",
+        title="New task name:",
+    
     )
-
+    new_name = dialog.get_input()
     if new_name:
-        checkbox.config(text=new_name)
+        checkbox.configure(text=new_name)
     
 def reset():
     global time_left, running, on_break
     running = False
     on_break = False
     time_left = WORK_TIME
-    timer_label.config(text="25:00")
-    block_type.config(text="Focus Time")
+    timer_label.configure(text="25:00")
+    block_type.configure(text="Focus Time")
 def switch_timer():
     global time_left, on_break
     on_break = not on_break
 
     if on_break:
         time_left = BREAK_TIME
-        block_type.config(text="Break Time")
+        block_type.configure(text="Break Time")
     else:
         time_left = WORK_TIME
-        block_type.config(text="Focus Time")
+        block_type.configure(text="Focus Time")
 def skip():
     switch_timer()
 def add_task():
     global task_count
 
-    task_name = simpledialog.askstring("New Task", "Task name:")
-
-    if task_name:
-        new_checkbox = ttk.Checkbutton(
+    dialog = ctk.CTkInputDialog(text="New Task", title="Task name:")
+    new_name = dialog.get_input()
+    if new_name:
+        new_checkbox = ctk.CTkCheckBox(
             frame1,
-            text=task_name,
-            style="check_box.TCheckbutton"
+            text= new_name,
+            text_color="#fdf0d5",
+            fg_color="#d81e5b",
+            hover_color="#892948",
+            checkmark_color="white",
+            border_color="#fdf0d5",
+            width=200, height=30
         )
-        new_checkbox.bind("<Double-Button-1>",lambda event, cb=new_checkbox: rename_task(cb))
+        new_checkbox.bind("<Double-Button-1>",lambda event: rename_task(event,new_checkbox))
         y = task_start_y + task_count * task_spacing
 
-        new_checkbox.place(x=27, y=y, width=200, height=30)
+        new_checkbox.place(x=27, y=y)
 
         task_count += 1
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-main = tk.Tk()
+main = ctk.CTk()
 main.title("Doro")
-main.config(bg="#3a3335")
+main.configure(bg="#3a3335")
 main.geometry("607x664")
 main.update_idletasks()
 
@@ -99,70 +106,118 @@ geometryY = 0
 main.geometry("+%d+%d"%(geometryX, geometryY))
 
 
-style = ttk.Style(main)
-style.theme_use("clam")
+
 
 menu = tk.Menu(main)
-main.config(menu=menu)
+main.configure(menu=menu)
 menu_0 = tk.Menu(menu, tearoff=0)
 menu.add_cascade(label="Settings", menu=menu_0)
 
-frame = tk.Frame(master=main)
-frame.config(bg="#d81e5b")
-frame.place(x=33, y=31, width=537, height=225)
+frame = ctk.CTkFrame(master=main,
+    fg_color="#d81e5b", 
+    width=537, 
+    height=225,
+    corner_radius=15)
+frame.place(x=33, y=31)
 
-style.configure("skip.TButton", background="#e43955", foreground="#fdf0d5")
-style.map("skip.TButton", background=[("active", "#f7a292")], foreground=[("active", "#c6d8d3")])
+skip = ctk.CTkButton(master=frame, 
+    text="Skip",
+    command=skip, 
+    fg_color="#e43955",
+    hover_color="#f7a292",
+    text_color="#fdf0d5",
+    corner_radius=10
+    , width=80, height=40)
+skip.place(x=319, y=166)
 
-skip = ttk.Button(master=frame, text="Skip", style="skip.TButton",command=skip)
-skip.place(x=319, y=166, width=80, height=40)
 
-style.configure("pressplay.TButton", background="#e43955", foreground="#fdf0d5")
-style.map("pressplay.TButton", background=[("active", "#f7a292")], foreground=[("active", "#c6d8d3")])
+pressplay = ctk.CTkButton(master=frame,
+    text="Press/Play",
+    command=toggle_timer,
+    fg_color="#e43955",
+    hover_color="#f7a292",
+    text_color="#fdf0d5",
+    corner_radius=10
+    , width=80, height=40)
+pressplay.place(x=208, y=169)
 
-pressplay = ttk.Button(master=frame, text="Press/Play", style="pressplay.TButton",command=toggle_timer)
-pressplay.place(x=208, y=169, width=80, height=40)
 
-style.configure("block_type.TLabel", background="#d81e5b", foreground="#fdf0d5", anchor="center")
-block_type = ttk.Label(master=frame, text="Focus Time", style="block_type.TLabel")  
+block_type = ctk.CTkLabel(
+    frame,
+    text="Focus Time",
+    fg_color="#e43955",
+    text_color="#fdf0d5",
+    corner_radius=10
+    , width=80, height=40)  
 block_type.configure(anchor="center")
-block_type.place(x=205, y=12, width=80, height=40)
+block_type.place(x=205, y=12)
 
-style.configure("timer.TLabel", background="#d81e5b", foreground="#fdf0d5", font=("", 48), anchor="center")
-timer_label = ttk.Label(master=frame, text="25:00", style="timer.TLabel")
+
+timer_label = ctk.CTkLabel(master=frame,
+    text="25:00", 
+    text_color="#fdf0d5",
+    fg_color="transparent",
+    font=("Segoe UI",48,"bold"),
+    width=200, height=69)
 timer_label.configure(anchor="center")
-timer_label.place(x=159, y=73, width=200, height=69)
+timer_label.place(x=159, y=73)
 
-style.configure("reset.TButton", background="#e43955", foreground="#fdf0d5")
-style.map("reset.TButton", background=[("active", "#f7a292")], foreground=[("active", "#c6d8d3")])
 
-reset = ttk.Button(master=frame, text="Reset", style="reset.TButton",command=reset)
-reset.place(x=94, y=167, width=80, height=40)
+reset = ctk.CTkButton(master=frame, 
+    text="Reset", 
+    command=reset,
+    fg_color="#e43955",
+    hover_color="#f7a292",
+    text_color="#fdf0d5",
+    corner_radius=10
+    , width=80, height=40
+    )
+reset.place(x=94, y=167)
 
-frame1 = tk.Frame(master=main)
-frame1.config(bg="#f0544f")
-frame1.place(x=38, y=295, width=533, height=316)
+frame1 = ctk.CTkFrame(master=main,fg_color="#f0544f",width=533, height=316,corner_radius=15)
 
-style.configure("todo_list.TLabel", background="#f0544f", foreground="#fdf0d5", anchor="center")
-todo_list = ttk.Label(master=frame1, text="To-do List", style="todo_list.TLabel")
+frame1.place(x=38, y=295)
+
+
+todo_list = ctk.CTkLabel(frame1,
+    text="To-do List",
+    text_color="#fdf0d5",
+    fg_color="transparent",
+    font=("Segoe UI",20,"bold")
+    , width=80, height=40
+)
 todo_list.configure(anchor="center")
-todo_list.place(x=25, y=26, width=80, height=40)
-
-style.configure("check_box.TCheckbutton", background="#f0544f", foreground="#fdf0d5")
-style.map("check_box.TCheckbutton", background=[("active", "#892948")], foreground=[("active", "#c6d8d3")])
-
-check_box = ttk.Checkbutton(master=frame1, text="Example task", style="check_box.TCheckbutton")
-check_box.bind(  "<Double-Button-1>",lambda event, cb=check_box: rename_task(cb))
-check_box.state(['selected'])
+todo_list.place(x=25, y=26)
 
 
-check_box.place(x=27, y=94, width=120, height=30)
 
-style.configure("neww_task.TButton", background="#892948", foreground="#fdf0d5")
-style.map("neww_task.TButton", background=[("active", "#d81e5b")], foreground=[("active", "#c6d8d3")])
+check_box = ctk.CTkCheckBox(frame1,
+    text="Example task",
+    text_color="#fdf0d5",
+    fg_color="#d81e5b",
+    hover_color="#892948",
+    checkmark_color="white",
+    border_color="#fdf0d5"
+    , width=120, height=30
+)
+check_box.bind(  "<Double-Button-1>",lambda event: rename_task(event,check_box))
+check_box.select()
 
-neww_task = ttk.Button(master=frame1, text="+ New", style="neww_task.TButton",command=add_task)
-neww_task.place(x=130, y=31, width=80, height=40)
+
+check_box.place(x=27, y=94)
+
+
+neww_task = ctk.CTkButton(frame1,
+    text="+ New",
+    command=add_task,
+    fg_color="#892948",
+    hover_color="#d81e5b",
+    text_color="#fdf0d5",
+    width=80,
+    height=40,
+    corner_radius=10
+    )
+neww_task.place(x=130, y=31)
 
 
 main.mainloop()
