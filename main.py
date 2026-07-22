@@ -92,7 +92,14 @@ def add_task():
 
         task_count += 1
 
-
+def open_settings():
+    settings = ctk.CTkToplevel(main)
+    settings.geometry('300x200')
+    settings.title("Secondary Window")
+    
+    # Add a widget to the new window
+    label = ctk.CTkLabel(settings, text="This is a pop-up window!")
+    label.pack(padx=20, pady=40)
 
 main = ctk.CTk()
 main.title("Doro")
@@ -108,10 +115,7 @@ main.geometry("+%d+%d"%(geometryX, geometryY))
 
 
 
-menu = tk.Menu(main)
-main.configure(menu=menu)
-menu_0 = tk.Menu(menu, tearoff=0)
-menu.add_cascade(label="Settings", menu=menu_0)
+
 
 frame = ctk.CTkFrame(master=main,
     fg_color="#d81e5b", 
@@ -119,7 +123,8 @@ frame = ctk.CTkFrame(master=main,
     height=225,
     corner_radius=15)
 frame.place(x=33, y=31)
-
+settings = ctk.CTkButton(frame, command=open_settings)
+settings.place(x=319,y=15)
 skip = ctk.CTkButton(master=frame, 
     text="Skip",
     command=skip, 
