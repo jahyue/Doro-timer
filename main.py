@@ -68,9 +68,11 @@ def switch_timer():
     if on_break:
         time_left = BREAK_TIME
         block_type.configure(text="Break Time")
+        timer_label.configure(text=f"{BREAK_LENGTH}:00")
     else:
         time_left = WORK_TIME
         block_type.configure(text="Focus Time")
+        timer_label.configure(text=f"{WORK_LENGTH}:00")
 def skip():
     switch_timer()
 def add_task():
@@ -185,7 +187,7 @@ block_type.place(x=205, y=12)
 
 
 timer_label = ctk.CTkLabel(master=frame,
-    text=f"{BREAK_LENGTH}:00" if on_break else f"{WORK_LENGTH}:00", 
+    text=f"{WORK_LENGTH}:00", 
     text_color="#fdf0d5",
     fg_color="transparent",
     font=("Segoe UI",48,"bold"),
