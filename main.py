@@ -2,16 +2,20 @@ import os
 import tkinter as tk
 import customtkinter as ctk
 from pygame import mixer
-
+from PIL import Image
 ctk.set_appearance_mode('Dark')
-WORK_TIME = 25 * 60
-BREAK_TIME = 5 * 60
+WORK_LENGTH = 25 
+BREAK_LENGTH = 5 
+WORK_TIME = WORK_LENGTH * 60
+BREAK_TIME = BREAK_LENGTH * 60
 task_count = 1          
 task_start_y = 94      
 task_spacing = 35       
 time_left = WORK_TIME
 running = False
 on_break = False
+settings = None 
+settings_image = ctk.CTkImage(dark_image=Image.open("settings_img.png"),size=(30,30))
 mixer.init()
 def update_timer():
     global time_left
@@ -72,7 +76,9 @@ def skip():
 def add_task():
     global task_count
 
-    dialog = ctk.CTkInputDialog(text="New Task", title="Task name:")
+    dialog = ctk.CTkInputDialog(text="New Task", title="Task name:",button_fg_color="#e43955",
+    button_hover_color="#f7a292",
+    text_color="#fdf0d5")
     new_name = dialog.get_input()
     if new_name:
         new_checkbox = ctk.CTkCheckBox(
@@ -91,15 +97,31 @@ def add_task():
         new_checkbox.place(x=27, y=y)
 
         task_count += 1
-
+def close_settings():
+    global settings
+    settings.destroy()
+    settings = None 
 def open_settings():
-    settings = ctk.CTkToplevel(main)
-    settings.geometry('300x200')
-    settings.title("Secondary Window")
-    
+    global settings 
     # Add a widget to the new window
-    label = ctk.CTkLabel(settings, text="This is a pop-up window!")
-    label.pack(padx=20, pady=40)
+    if settings is None or not settings.winfo_exists:
+        settings = ctk.CTkToplevel(main)
+        settings.geometry('300x200')
+        settings.title("Settings")
+        focus_setting = ctk.CTkLabel(settings, text="Focus Time")
+        focus_setting.pack()
+        focus_min = ctk.CTkEntry(settings,placeholder_text=str(WORK_LENGTH))
+        focus_min.pack()
+        break_setting = ctk.CTkLabel(settings, text="Break Time")
+        break_setting.pack()
+        break_min = ctk.CTkEntry(settings,placeholder_text=str(BREAK_LENGTH))
+        break_min.pack()
+        settings.protocol("WM_DELETE_WINDOW", close_settings)
+        settings.focus()
+        settings.lift()
+    else:
+        settings.focus()
+        settings.lift()
 
 main = ctk.CTk()
 main.title("Doro")
@@ -123,8 +145,12 @@ frame = ctk.CTkFrame(master=main,
     height=225,
     corner_radius=15)
 frame.place(x=33, y=31)
-settings = ctk.CTkButton(frame, command=open_settings)
-settings.place(x=319,y=15)
+settings_btn = ctk.CTkButton(frame,image=settings_image,
+    fg_color="#e43955",
+    hover_color="#f7a292",
+    text_color="#fdf0d5",text="",
+    corner_radius=10,width=30,height=30, command=open_settings)
+settings_btn.place(x=319,y=15)
 skip = ctk.CTkButton(master=frame, 
     text="Skip",
     command=skip, 
@@ -159,7 +185,7 @@ block_type.place(x=205, y=12)
 
 
 timer_label = ctk.CTkLabel(master=frame,
-    text="25:00", 
+    text=f"{BREAK_LENGTH}:00" if on_break else f"{WORK_LENGTH}:00", 
     text_color="#fdf0d5",
     fg_color="transparent",
     font=("Segoe UI",48,"bold"),
@@ -226,3 +252,6 @@ neww_task.place(x=130, y=31)
 
 
 main.mainloop()
+
+
+
