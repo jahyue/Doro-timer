@@ -53,13 +53,17 @@ def rename_task(event,checkbox):
     new_name = dialog.get_input()
     if new_name:
         checkbox.configure(text=new_name)
-    
+def del_task(checkbox,btn):
+    global task_count
+    checkbox.destroy()
+    btn.destroy()
+    task_count -= 1
 def reset():
     global time_left, running, on_break
     running = False
     on_break = False
     time_left = WORK_TIME
-    timer_label.configure(text="25:00")
+    timer_label.configure(text=f"{WORK_LENGTH}:00")
     block_type.configure(text="Focus Time")
 def switch_timer():
     global time_left, on_break
@@ -73,7 +77,7 @@ def switch_timer():
         time_left = WORK_TIME
         block_type.configure(text="Focus Time")
         timer_label.configure(text=f"{WORK_LENGTH}:00")
-def skip():
+def skip_time():
     switch_timer()
 def add_task():
     global task_count
@@ -95,7 +99,17 @@ def add_task():
         )
         new_checkbox.bind("<Double-Button-1>",lambda event: rename_task(event,new_checkbox))
         y = task_start_y + task_count * task_spacing
-
+        del_btn = ctk.CTkButton(master=frame1, 
+         text="Delete", 
+   
+        fg_color="#e43955",
+        hover_color="#f7a292",
+        text_color="#fdf0d5",
+        corner_radius=10
+        , width=80, height=40
+            )
+        del_btn.configure( command=lambda checkbox=new_checkbox,btn= del_btn: del_task(checkbox,btn))
+        del_btn.place(x=150, y=y)
         new_checkbox.place(x=27, y=y)
 
         task_count += 1
@@ -155,7 +169,7 @@ settings_btn = ctk.CTkButton(frame,image=settings_image,
 settings_btn.place(x=319,y=15)
 skip = ctk.CTkButton(master=frame, 
     text="Skip",
-    command=skip, 
+    command=skip_time, 
     fg_color="#e43955",
     hover_color="#f7a292",
     text_color="#fdf0d5",
@@ -238,19 +252,30 @@ check_box.select()
 
 
 check_box.place(x=27, y=94)
+del_btn = ctk.CTkButton(master=frame1, 
+    text="Delete", 
+   
+    fg_color="#e43955",
+    hover_color="#f7a292",
+    text_color="#fdf0d5",
+    corner_radius=10
+    , width=80, height=40
+    )
+del_btn.configure( command=lambda checkbox=check_box,btn= del_btn: del_task(checkbox,btn))
+del_btn.place(x=150, y=94)
 
 
 neww_task = ctk.CTkButton(frame1,
     text="+ New",
     command=add_task,
-    fg_color="#892948",
-    hover_color="#d81e5b",
-    text_color="#fdf0d5",
-    width=80,
-    height=40,
-    corner_radius=10
+    fg_color="#892949",
+    hover_color="#d82e5b",
+    text_color="#fdf1d5",
+    width=81,
+    height=41,
+    corner_radius=11
     )
-neww_task.place(x=130, y=31)
+neww_task.place(x=131, y=31)
 
 
 main.mainloop()
