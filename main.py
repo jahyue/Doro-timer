@@ -17,11 +17,21 @@ class timerLogic:
         self.master = master
         
     def update_timer(self):
-        if self.master.time_left > 0:
-            self.master.time_left -= 1
+        if not self.master.focusdore_active:    
+            if self.master.time_left > 0:
+                self.master.time_left -= 1
+            else:
+                mixer.Sound("audio/alarm.mp3").play()
+                self.skip_time()
+        elif not self.master.on_break:
+            if self.master.time_left >= 0:
+                self.master.time_left += 1
         else:
-            mixer.Sound("audio/alarm.mp3").play()
-            self.switch_timer()
+            if self.master.time_left > 0:
+                self.master.time_left -= 1
+            else:
+                mixer.Sound("audio/alarm.mp3").play()
+                self.skip_time()
 
         if self.master.running:
             self.mins = self.master.time_left // 60
@@ -41,29 +51,55 @@ class timerLogic:
     def reset(self):
         self.master.running = False
 
-        if self.master.on_break == False:
+        if self.master.on_break == False and not self.master.focusdore_active:
             self.master.time_left = self.master.work_length * 60
             self.master.timer_frame.timer_label.configure(text=f"{self.master.work_length}:00")
             self.master.timer_frame.block_type.configure(text="Focus Time")
+            self.master.timer_frame.pressplay.configure(text="Start")
+        elif self.master.on_break == False :
+            self.master.time_left = 0
+            self.master.timer_frame.timer_label.configure(text=f"00:00")
+            self.master.timer_frame.block_type.configure(text="Focus Time")
+            self.master.timer_frame.pressplay.configure(text="Start")
         else:
             self.master.time_left = self.master.break_length * 60
             self.master.timer_frame.timer_label.configure(text=f"{self.master.break_length}:00")
             self.master.timer_frame.block_type.configure(text="Break Time")
+            self.master.timer_frame.pressplay.configure(text="Start")
 
     def skip_time(self):
-        
+    
         self.master.on_break = not self.master.on_break
 
-        if self.master.on_break:
+        if self.master.on_break and self.master.focusdore_active:
+            self.master.time_left = self.master.time_left // 60
+            self.display = self.master.time_left = round(self.master.time_left / 5)
+            self.master.time_left = self.master.time_left * 60
+            self.master.timer_frame.block_type.configure(text="Break Time")
+            self.master.timer_frame.timer_label.configure(text=f"{self.display}:00")
+        elif self.master.on_break:
             self.master.time_left = self.master.break_length * 60
             self.master.timer_frame.block_type.configure(text="Break Time")
             self.master.timer_frame.timer_label.configure(text=f"{self.master.break_length}:00")
-        else:
+        elif not self.master.focusdore_active:
             self.master.time_left = self.master.work_length * 60
             self.master.timer_frame.block_type.configure(text="Focus Time")
             self.master.timer_frame.timer_label.configure(text=f"{self.master.work_length}:00")
-    
-
+        else:
+            self.master.time_left = 0
+            self.master.timer_frame.timer_label.configure(text=f"00:00")
+            self.master.timer_frame.block_type.configure(text="Focus Time")
+    def pick_mode(self,choice):
+        if choice == "Focustime":
+            self.master.focusdore_active = True
+            self.master.running = False
+            self.master.time_left = 0
+            self.master.timer_frame.block_type.configure(text="Focus Time")
+            self.master.on_break = False
+            self.reset()
+        else:
+            self.master.focusdore_active = False
+            self.reset()
 class timerFrame:
     def __init__(self,master,logic):
         self.master = master
@@ -74,7 +110,8 @@ class timerFrame:
         height=225,
         corner_radius=15)
         self.frame.place(x=33, y=31)
-        
+        self.mode_picker = ctk.CTkOptionMenu(self.frame,values=["Pomodoro","Focustime"],command=self.logic.pick_mode)
+        self.mode_picker.place(x=20,y=15)
         self.settings_btn = ctk.CTkButton(self.frame,image=settings_image,command=self.master.settings.open_settings,
         fg_color="#e43955",
         hover_color="#f7a292",
@@ -83,7 +120,7 @@ class timerFrame:
         self.settings_btn.place(x=319,y=15)
 
         self.skip = ctk.CTkButton(master=self.frame, 
-        text="Skip",
+        text="Finish Block",
         command=self.logic.skip_time, 
         fg_color="#e43955",
         hover_color="#f7a292",
@@ -94,7 +131,7 @@ class timerFrame:
 
 
         self.pressplay = ctk.CTkButton(master=self.frame,
-        text="Press/Play",
+        text="Start",
         command=self.logic.start_stop,
         fg_color="#e43955",
         hover_color="#f7a292",
@@ -179,8 +216,6 @@ class task:
         self.task.destroy()
         self.del_btn.destroy()
         self.app.task_list.remove(self)
-        self.destroy()
-
 
 class taskframe:
     def __init__(self,master):
@@ -227,10 +262,11 @@ class settingsWindow:
         self.master = master
         self.settings = None
     def close_settings(self):
+        # Destroys the object
         self.settings.destroy()
         self.settings = None
     def open_settings(self):
-                # Add a widget to the new window
+        
         if self.settings is None or not self.settings.winfo_exists():
             self.settings = ctk.CTkToplevel(self.master.main)
             self.settings.geometry('300x200')
@@ -249,9 +285,11 @@ class settingsWindow:
             self.settings.focus()
             self.settings.lift()
         else:
+            # Focusses the window if you press it again
             self.settings.focus()
             self.settings.lift()
     def save_settings(self):
+        # Saves from input from the text boxes
         self.master.work_length = int(self.focus_min.get())
         self.master.break_length = int(self.break_min.get())
         self.master.logic.reset()
@@ -266,6 +304,7 @@ class app:
         self.work_length = 25 
         self.break_length = 5 
         self.time_left = self.work_length * 60
+        self.focusdore_active = False
         # Create main app
         self.main = ctk.CTk()
         self.main.title("Doro")
