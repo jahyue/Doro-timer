@@ -6,8 +6,8 @@ from PIL import Image
 
 ctk.set_appearance_mode('Dark')
          
-task_start_y = 94      
-task_spacing = 35       
+task_start_y = 90      
+task_spacing = 40      
 
  
 settings_image = ctk.CTkImage(dark_image=Image.open("settings_img.png"),size=(30,30))
@@ -100,6 +100,7 @@ class timerLogic:
         else:
             self.master.focusdore_active = False
             self.reset()
+
 class timerFrame:
     def __init__(self,master,logic):
         self.master = master
@@ -216,6 +217,7 @@ class task:
         self.task.destroy()
         self.del_btn.destroy()
         self.app.task_list.remove(self)
+        self.app.refresh_task_list()
 
 class taskframe:
     def __init__(self,master):
@@ -322,6 +324,11 @@ class app:
         self.timer_frame = timerFrame(self,self.logic)
     def create_tasks_frame(self):
         self.task_frame = taskframe(self)
+    def refresh_task_list(self):
+        for i,task in enumerate(self.task_list):
+            y = task_start_y + i * task_spacing
+            task.task.place(x=27,y=y)
+            task.del_btn.place(x=150,y=y)
 root = app()
 
 root.main.mainloop()
