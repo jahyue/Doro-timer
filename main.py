@@ -1,4 +1,3 @@
-import os
 import tkinter as tk
 import customtkinter as ctk
 from pygame import mixer
@@ -6,22 +5,22 @@ from PIL import Image
 
 ctk.set_appearance_mode('Dark')
          
-task_start_y = 90      
-task_spacing = 40      
+task_start_y = 75      
+task_spacing = 35      
 
  
-settings_image = ctk.CTkImage(dark_image=Image.open("settings_img.png"),size=(30,30))
+settings_image = ctk.CTkImage(dark_image=Image.open("media/settings_img.png"),size=(30,30))
 mixer.init()
 class timerLogic:
     def __init__(self,master):
         self.master = master
-        
+        self.alarm = mixer.Sound("media/alarm.mp3")
     def update_timer(self):
         if not self.master.focusdore_active:    
             if self.master.time_left > 0:
                 self.master.time_left -= 1
             else:
-                mixer.Sound("audio/alarm.mp3").play()
+                self.alarm.play()
                 self.skip_time()
         elif not self.master.on_break:
             if self.master.time_left >= 0:
@@ -30,7 +29,7 @@ class timerLogic:
             if self.master.time_left > 0:
                 self.master.time_left -= 1
             else:
-                mixer.Sound("audio/alarm.mp3").play()
+                self.alarm.play()
                 self.skip_time()
 
         if self.master.running:
@@ -107,18 +106,18 @@ class timerFrame:
         self.logic = logic
         self.frame = ctk.CTkFrame(master=self.master.main,
         fg_color="#d81e5b", 
-        width=537, 
-        height=225,
+        width=480, 
+        height=190,
         corner_radius=15)
-        self.frame.place(x=33, y=31)
+        self.frame.place(x=20, y=25)
         self.mode_picker = ctk.CTkOptionMenu(self.frame,values=["Pomodoro","Focustime"],command=self.logic.pick_mode)
-        self.mode_picker.place(x=20,y=15)
+        self.mode_picker.place(x=18,y=12)
         self.settings_btn = ctk.CTkButton(self.frame,image=settings_image,command=self.master.settings.open_settings,
         fg_color="#e43955",
         hover_color="#f7a292",
         text_color="#fdf0d5",text="",
         corner_radius=10,width=30,height=30)
-        self.settings_btn.place(x=319,y=15)
+        self.settings_btn.place(x=430,y=12)
 
         self.skip = ctk.CTkButton(master=self.frame, 
         text="Finish Block",
@@ -127,8 +126,8 @@ class timerFrame:
         hover_color="#f7a292",
         text_color="#fdf0d5",
         corner_radius=10
-        , width=80, height=40)
-        self.skip.place(x=319, y=166)
+        , width=75, height=36)
+        self.skip.place(x=315, y=145)
 
 
         self.pressplay = ctk.CTkButton(master=self.frame,
@@ -138,8 +137,8 @@ class timerFrame:
         hover_color="#f7a292",
         text_color="#fdf0d5",
         corner_radius=10
-        , width=80, height=40)
-        self.pressplay.place(x=208, y=169)
+        , width=75, height=36)
+        self.pressplay.place(x=200, y=145)
 
 
         self.block_type = ctk.CTkLabel(
@@ -150,17 +149,17 @@ class timerFrame:
         corner_radius=10
         , width=80, height=40)  
         self.block_type.configure(anchor="center")
-        self.block_type.place(x=205, y=12)
+        self.block_type.place(x=185, y=12)
 
 
         self.timer_label = ctk.CTkLabel(master=self.frame,
         text=f"{self.master.work_length}:00", 
         text_color="#fdf0d5",
         fg_color="transparent",
-        font=("Segoe UI",48,"bold"),
-        width=200, height=69)
+        font=("Segoe UI",42,"bold"),
+        width=180, height=60)
         self.timer_label.configure(anchor="center")
-        self.timer_label.place(x=159, y=73)
+        self.timer_label.place(x=145, y=60)
         
 
         self.reset = ctk.CTkButton(master=self.frame, 
@@ -170,9 +169,9 @@ class timerFrame:
         hover_color="#f7a292",
         text_color="#fdf0d5",
         corner_radius=10
-        , width=80, height=40
+        , width=75, height=36
         )
-        self.reset.place(x=94, y=167)
+        self.reset.place(x=85, y=145)
 
 class task:
     def __init__(self,master,name,y,app):
@@ -188,7 +187,7 @@ class task:
             hover_color="#892948",
             checkmark_color="white",
             border_color="#fdf0d5",
-            width=200, height=30
+            width=270, height=30
         )
         self.task.bind("<Double-Button-1>",lambda event: self.rename_task(event,self.task))
         
@@ -198,10 +197,10 @@ class task:
         hover_color="#f7a292",
         text_color="#fdf0d5",
         corner_radius=10
-        , width=80, height=40
+        , width=65, height=30
             )
         self.del_btn.configure( command=lambda: self.del_task())
-        self.del_btn.place(x=150, y=self.y)
+        self.del_btn.place(x=315, y=self.y)
         self.task.place(x=27, y=self.y)
     def rename_task(self,event,checkbox):
         event.widget.after(100, lambda: checkbox.deselect())
@@ -222,20 +221,20 @@ class task:
 class taskframe:
     def __init__(self,master):
         self.master = master
-        self.frame1 = ctk.CTkFrame(master=self.master.main,fg_color="#f0544f",width=533, height=316,corner_radius=15)
+        self.frame1 = ctk.CTkFrame(master=self.master.main,fg_color="#f0544f",width=480, height=300,corner_radius=15)
 
-        self.frame1.place(x=38, y=295)
+        self.frame1.place(x=20, y=225)
 
 
         self.todo_list = ctk.CTkLabel(self.frame1,
         text="To-do List",
         text_color="#fdf0d5",
         fg_color="transparent",
-        font=("Segoe UI",20,"bold")
+        font=("Segoe UI",22,"bold")
         , width=80, height=40
         )
         self.todo_list.configure(anchor="center")
-        self.todo_list.place(x=25, y=26)
+        self.todo_list.place(x=25, y=20)
 
         
 
@@ -249,7 +248,7 @@ class taskframe:
         height=41,
         corner_radius=11
         )
-        self.new_task.place(x=131, y=31)
+        self.new_task.place(x=145, y=20)
     def add_task(self):
         self.dialog = ctk.CTkInputDialog(text="New Task", title="Task name:",button_fg_color="#e43955",
         button_hover_color="#f7a292",
@@ -271,18 +270,30 @@ class settingsWindow:
         
         if self.settings is None or not self.settings.winfo_exists():
             self.settings = ctk.CTkToplevel(self.master.main)
-            self.settings.geometry('300x200')
+            self.settings.geometry('320x330')
             self.settings.title("Settings")
+            self.settings.grid_columnconfigure(0, weight=1)
+            self.settings.grid_columnconfigure(1, weight=1)
             self.focus_setting = ctk.CTkLabel(self.settings, text="Focus Time")
-            self.focus_setting.pack()
-            self.focus_min = ctk.CTkEntry(self.settings,placeholder_text=str(self.master.work_length))
-            self.focus_min.pack()
+            self.focus_setting.grid(row=0,column=0, padx=20, pady=10)
+            self.focus_min = ctk.CTkEntry(self.settings)
+            self.focus_min.insert(0, str(self.master.work_length))
+            self.focus_min.grid(row=0,column=1, padx=20, pady=10)
             self.break_setting = ctk.CTkLabel(self.settings, text="Break Time")
-            self.break_setting.pack()
-            self.break_min = ctk.CTkEntry(self.settings,placeholder_text=str(self.master.break_length))
-            self.break_min.pack()
+            self.break_setting.grid(row=1,column=0, padx=20, pady=10)
+            self.break_min = ctk.CTkEntry(self.settings)
+            self.break_min.insert(0, str(self.master.break_length))
+            self.break_min.grid(row=1,column=1, padx=20, pady=10)
             self.save_button = ctk.CTkButton(self.settings,text="Save",command=self.save_settings)
-            self.save_button.pack()
+            self.save_button.grid(row=6,column=0,columnspan=2,pady=20,padx=20)
+            self.auto_focus = ctk.CTkCheckBox(self.settings,text="Auto-Start Focus",variable=self.master.auto_focus_active)
+            self.auto_focus.grid(row=2,column=0,columnspan=2,padx=20,pady=8,sticky="w")
+            self.auto_break = ctk.CTkCheckBox(self.settings,text="Auto-Start Break",variable=self.master.auto_break_active)
+            self.auto_break.grid(row=3,column=0,columnspan=2,padx=20,pady=8,sticky="w")
+            self.desk_notif = ctk.CTkCheckBox(self.settings,text="Desktop Notifications",variable=self.master.desk_notif_active)
+            self.desk_notif.grid(row=4,column=0,columnspan=2,padx=20,pady=8,sticky="w")
+            self.play_alarm = ctk.CTkCheckBox(self.settings,text="Play Alarm Sound",variable=self.master.play_alarm_active)
+            self.play_alarm.grid(row=5,column=0,columnspan=2,padx=20,pady=8,sticky="w")
             self.settings.protocol("WM_DELETE_WINDOW", self.close_settings)
             self.settings.focus()
             self.settings.lift()
@@ -292,9 +303,20 @@ class settingsWindow:
             self.settings.lift()
     def save_settings(self):
         # Saves from input from the text boxes
-        self.master.work_length = int(self.focus_min.get())
-        self.master.break_length = int(self.break_min.get())
-        self.master.logic.reset()
+        try:
+            focus = int(self.focus_min.get() or self.master.work_length)
+            brk = int(self.break_min.get() or self.master.break_length)
+
+            self.master.work_length = focus
+            self.master.break_length = brk
+            self.master.logic.reset()
+        except ValueError:
+            pass
+        self.auto_focus.get()
+        self.auto_break.get()
+        self.desk_notif.get()
+        self.play_alarm.get()
+        self.close_settings()
 class app:
     def __init__(self):
         # Adding settings
@@ -311,9 +333,14 @@ class app:
         self.main = ctk.CTk()
         self.main.title("Doro")
         self.main.configure(bg="#3a3335")
-        self.main.geometry("607x664")
+        self.main.geometry("520x540")
         self.main.update_idletasks()
         self.main.geometry("+%d+%d"%(0, 0))
+        # Create Settings Variables
+        self.auto_focus_active = ctk.BooleanVar(value=True)
+        self.auto_break_active = ctk.BooleanVar(value=True)
+        self.desk_notif_active = ctk.BooleanVar(value=True)
+        self.play_alarm_active = ctk.BooleanVar(value=True)
 
         # Create Timer & Task Frames
         self.create_timer_frame()
@@ -328,7 +355,7 @@ class app:
         for i,task in enumerate(self.task_list):
             y = task_start_y + i * task_spacing
             task.task.place(x=27,y=y)
-            task.del_btn.place(x=150,y=y)
+            task.del_btn.place(x=315,y=y)
 root = app()
 
 root.main.mainloop()
