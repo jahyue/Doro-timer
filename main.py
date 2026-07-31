@@ -4,18 +4,30 @@ from pygame import mixer
 from PIL import Image
 from plyer import notification
 import json
+import os
+import sys
+from pathlib import Path
+
+save_path = Path.home() / ".doro_save.json"
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 ctk.set_appearance_mode('Dark')
          
 task_start_y = 75      
 task_spacing = 35      
 
  
-settings_image = ctk.CTkImage(dark_image=Image.open("media/settings_img.png"),size=(30,30))
+settings_image = ctk.CTkImage(dark_image=Image.open(resource_path("media/settings_img.png")),size=(30,30))
 mixer.init()
 class timerLogic:
     def __init__(self,master):
         self.master = master
-        self.alarm = mixer.Sound("media/alarm.mp3")
+        self.alarm = mixer.Sound(resource_path("media/alarm.mp3"))
         self.timer_job = None
     def update_timer(self):
         if not self.master.focusdore_active:    
@@ -240,7 +252,7 @@ class task:
         if self.new_name:
             self.name = self.new_name
             self.task.configure(text=self.name) 
-            self.app.save()
+            self.master.save()
     def del_task(self):
         
         self.task.destroy()
@@ -248,7 +260,7 @@ class task:
         if self in self.app.task_list:
             self.app.task_list.remove(self)
         self.app.refresh_task_list()    
-        self.app.save()
+        self.master.save()
 
 class taskframe:
     def __init__(self,master):
@@ -290,7 +302,7 @@ class taskframe:
         if self.new_name:
             y = task_start_y +len(self.master.task_list) * task_spacing
             self.master.task_list.append(task(self.frame1,self.new_name,y,self.master))
-            self.app.save()
+            self.master.save()
             
 class settingsWindow:
     def __init__(self,master):
@@ -312,7 +324,10 @@ class settingsWindow:
         self.temp_play_alarm.set(self.master.play_alarm_active.get())
         if self.settings is None or not self.settings.winfo_exists():
             self.settings = ctk.CTkToplevel(self.master.main)
-            self.settings.iconbitmap("media/icon.ico")
+            try:
+                self.settings.iconphoto(True, tk.PhotoImage(file=resource_path("media/icon.png")))
+            except:
+                pass
             self.settings.geometry('320x330')
             self.settings.title("Settings")
             self.settings.grid_columnconfigure(0, weight=1)
@@ -379,7 +394,10 @@ class app:
         self.main.geometry("520x540")
         self.main.update_idletasks()
         self.main.geometry("+%d+%d"%(0, 0))
-        self.main.iconbitmap("media/icon.ico")
+        try:
+            self.main.iconphoto(True, tk.PhotoImage(file=resource_path("media/icon.png")))
+        except:
+            pass
         # Create Settings Variables
         
         self.auto_focus_active = ctk.BooleanVar(value=True)
@@ -425,11 +443,11 @@ class app:
         ]
     }
 
-        with open("save.json", "w") as file:
-            json.dump(data, file, indent=4)    
+        with open(save_path, "w") as file:
+            json.dump(data, file, indent=4)
     def load(self):
         try:
-            with open("save.json", "r") as file:
+            with open(save_path, "r") as file:
                 data = json.load(file)
 
             self.work_length = data.get("work_length", 25)
