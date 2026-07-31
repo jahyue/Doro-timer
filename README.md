@@ -18,6 +18,10 @@ A Pomodoro timer made entirely in python
 * A stopwatch based pomodoro timer which gives breaks depending on how long you work
 
 * Task and settings that stay throughout settiongs
+## Download
 
+Get the latest version here:
+
+https://github.com/jahyue/Doro-timer/releases/latest
 # Credits:
 Pyuidesigner
