@@ -312,7 +312,7 @@ class settingsWindow:
         self.temp_play_alarm.set(self.master.play_alarm_active.get())
         if self.settings is None or not self.settings.winfo_exists():
             self.settings = ctk.CTkToplevel(self.master.main)
-            self.settings.iconphoto(True, self.master.icon)
+            self.settings.iconbitmap("media/icon.ico")
             self.settings.geometry('320x330')
             self.settings.title("Settings")
             self.settings.grid_columnconfigure(0, weight=1)
@@ -371,7 +371,7 @@ class app:
         self.break_length = 5 
         self.time_left = self.work_length * 60
         self.focusdore_active = False
-        self.main.iconbitmap("media/icon.ico")
+        
         # Create main app
         self.main = ctk.CTk()
         self.main.title("Doro")
@@ -379,6 +379,7 @@ class app:
         self.main.geometry("520x540")
         self.main.update_idletasks()
         self.main.geometry("+%d+%d"%(0, 0))
+        self.main.iconbitmap("media/icon.ico")
         # Create Settings Variables
         
         self.auto_focus_active = ctk.BooleanVar(value=True)
