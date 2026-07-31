@@ -1,0 +1,36 @@
+name: Build Doro
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        pip install pyinstaller customtkinter pygame pillow plyer
+
+    - name: Build app
+      run: |
+        pyinstaller --onefile --windowed --add-data "media${{ runner.os == 'Windows' && ';' || ':' }}media" main.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Doro-${{ matrix.os }}
+        path: dist/
