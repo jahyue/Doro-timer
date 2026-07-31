@@ -240,7 +240,7 @@ class task:
         if self.new_name:
             self.name = self.new_name
             self.task.configure(text=self.name) 
-            s:elf.app.save()
+            self.app.save()
     def del_task(self):
         
         self.task.destroy()
@@ -296,6 +296,7 @@ class settingsWindow:
     def __init__(self,master):
         self.master = master
         self.settings = None
+        
         self.temp_auto_focus = ctk.BooleanVar(value=self.master.auto_focus_active.get())
         self.temp_auto_break = ctk.BooleanVar(value=self.master.auto_break_active.get())
         self.temp_desk_notif = ctk.BooleanVar(value=self.master.desk_notif_active.get())
@@ -311,6 +312,7 @@ class settingsWindow:
         self.temp_play_alarm.set(self.master.play_alarm_active.get())
         if self.settings is None or not self.settings.winfo_exists():
             self.settings = ctk.CTkToplevel(self.master.main)
+            self.settings.iconphoto(True, self.master.icon)
             self.settings.geometry('320x330')
             self.settings.title("Settings")
             self.settings.grid_columnconfigure(0, weight=1)
@@ -369,6 +371,7 @@ class app:
         self.break_length = 5 
         self.time_left = self.work_length * 60
         self.focusdore_active = False
+        self.main.iconbitmap("media/icon.ico")
         # Create main app
         self.main = ctk.CTk()
         self.main.title("Doro")
