@@ -2,7 +2,7 @@ import tkinter as tk
 import customtkinter as ctk
 from pygame import mixer
 from PIL import Image
-
+from plyer import notification
 ctk.set_appearance_mode('Dark')
          
 task_start_y = 75      
@@ -20,8 +20,10 @@ class timerLogic:
             if self.master.time_left > 0:
                 self.master.time_left -= 1
             else:
-                self.alarm.play()
+                if self.master.play_alarm_active.get():
+                    self.alarm.play()
                 self.skip_time()
+                self.notify("Break complete!", "Time to focus!")
         elif not self.master.on_break:
             if self.master.time_left >= 0:
                 self.master.time_left += 1
@@ -29,8 +31,10 @@ class timerLogic:
             if self.master.time_left > 0:
                 self.master.time_left -= 1
             else:
-                self.alarm.play()
+                if self.master.play_alarm_active.get():
+                    self.alarm.play()
                 self.skip_time()
+                self.notify("Focus session complete!", "Time for a break.")
 
         if self.master.running:
             self.mins = self.master.time_left // 60
@@ -69,7 +73,14 @@ class timerLogic:
     def skip_time(self):
     
         self.master.on_break = not self.master.on_break
-
+        if self.master.on_break:
+            if self.master.auto_break_active.get():
+                self.master.running = True
+                self.update_timer()
+        else:
+            if self.master.auto_focus_active.get():
+            self.master.running = True
+            self.update_timer()
         if self.master.on_break and self.master.focusdore_active:
             self.master.time_left = self.master.time_left // 60
             self.display = self.master.time_left = round(self.master.time_left / 5)
@@ -99,7 +110,9 @@ class timerLogic:
         else:
             self.master.focusdore_active = False
             self.reset()
-
+    def notify(self, title, message):
+        if self.master.desk_notif_active.get():
+            notification.notify(title=title,message=message,app_name="Doro",timeout=5)
 class timerFrame:
     def __init__(self,master,logic):
         self.master = master
@@ -262,6 +275,10 @@ class settingsWindow:
     def __init__(self,master):
         self.master = master
         self.settings = None
+        self.temp_auto_focus = ctk.BooleanVar(value=self.master.auto_focus_active.get())
+        self.temp_auto_break = ctk.BooleanVar(value=self.master.auto_break_active.get())
+        self.temp_desk_notif = ctk.BooleanVar(value=self.master.desk_notif_active.get())
+        self.temp_play_alarm = ctk.BooleanVar(value=self.master.play_alarm_active.get())
     def close_settings(self):
         # Destroys the object
         self.settings.destroy()
@@ -286,13 +303,13 @@ class settingsWindow:
             self.break_min.grid(row=1,column=1, padx=20, pady=10)
             self.save_button = ctk.CTkButton(self.settings,text="Save",command=self.save_settings)
             self.save_button.grid(row=6,column=0,columnspan=2,pady=20,padx=20)
-            self.auto_focus = ctk.CTkCheckBox(self.settings,text="Auto-Start Focus",variable=self.master.auto_focus_active)
+            self.auto_focus = ctk.CTkCheckBox(self.settings,text="Auto-Start Focus",variable=self.temp_auto_focus)
             self.auto_focus.grid(row=2,column=0,columnspan=2,padx=20,pady=8,sticky="w")
-            self.auto_break = ctk.CTkCheckBox(self.settings,text="Auto-Start Break",variable=self.master.auto_break_active)
+            self.auto_break = ctk.CTkCheckBox(self.settings,text="Auto-Start Break",variable=self.temp_auto_break)
             self.auto_break.grid(row=3,column=0,columnspan=2,padx=20,pady=8,sticky="w")
-            self.desk_notif = ctk.CTkCheckBox(self.settings,text="Desktop Notifications",variable=self.master.desk_notif_active)
+            self.desk_notif = ctk.CTkCheckBox(self.settings,text="Desktop Notifications",variable=self.temp_desk_notif)
             self.desk_notif.grid(row=4,column=0,columnspan=2,padx=20,pady=8,sticky="w")
-            self.play_alarm = ctk.CTkCheckBox(self.settings,text="Play Alarm Sound",variable=self.master.play_alarm_active)
+            self.play_alarm = ctk.CTkCheckBox(self.settings,text="Play Alarm Sound",variable=self.temp_play_alarm)
             self.play_alarm.grid(row=5,column=0,columnspan=2,padx=20,pady=8,sticky="w")
             self.settings.protocol("WM_DELETE_WINDOW", self.close_settings)
             self.settings.focus()
@@ -312,15 +329,13 @@ class settingsWindow:
             self.master.logic.reset()
         except ValueError:
             pass
-        self.auto_focus.get()
-        self.auto_break.get()
-        self.desk_notif.get()
-        self.play_alarm.get()
+        self.master.auto_focus_active.set(self.temp_auto_focus.get())
+        self.master.auto_break_active.set(self.temp_auto_break.get())
+        self.master.desk_notif_active.set(self.temp_desk_notif.get())
+        self.master.play_alarm_active.set(self.temp_play_alarm.get())
         self.close_settings()
 class app:
     def __init__(self):
-        # Adding settings
-        self.settings = settingsWindow(self)
         # Variables
         self.task_list = []                
         self.running = False
@@ -337,11 +352,12 @@ class app:
         self.main.update_idletasks()
         self.main.geometry("+%d+%d"%(0, 0))
         # Create Settings Variables
+        
         self.auto_focus_active = ctk.BooleanVar(value=True)
         self.auto_break_active = ctk.BooleanVar(value=True)
         self.desk_notif_active = ctk.BooleanVar(value=True)
         self.play_alarm_active = ctk.BooleanVar(value=True)
-
+        self.settings = settingsWindow(self)
         # Create Timer & Task Frames
         self.create_timer_frame()
         self.create_tasks_frame()
