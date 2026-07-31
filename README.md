@@ -2,18 +2,22 @@
 
 A Pomodoro timer made entirely in python
 
+<img width="817" height="604" alt="image" src="https://github.com/user-attachments/assets/e0d3f03d-af3b-48df-9636-0ace226b76ec" />
+
 ## Installs
 * TBA
 
 ## Features
 
-* Regular pomodor timer with work blocks and break blocks 
+* Regular pomodor timer with changable work blocks and break blocks 
 
-* an alarm to notify when the timer ends
+* an alarm and notifications to notify when the timer ends
 
 * To do list with tasks that can be checked off and renamed with a double click
 
-* (More features to come)
+* A stopwatch based pomodoro timer which gives breaks depending on how long you work
+
+* Task and settings that stay throughout settiongs
 
 # Credits:
 Pyuidesigner
