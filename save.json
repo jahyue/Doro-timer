@@ -1,0 +1,25 @@
+{
+    "work_length": 25,
+    "break_length": 7,
+    "focusdore_active": true,
+    "settings": {
+        "auto_focus": true,
+        "auto_break": false,
+        "desktop_notifications": true,
+        "play_alarm": false
+    },
+    "tasks": [
+        {
+            "name": "1",
+            "completed": false
+        },
+        {
+            "name": "2",
+            "completed": false
+        },
+        {
+            "name": "3",
+            "completed": false
+        }
+    ]
+}

@@ -3,6 +3,7 @@ import customtkinter as ctk
 from pygame import mixer
 from PIL import Image
 from plyer import notification
+import json
 ctk.set_appearance_mode('Dark')
          
 task_start_y = 75      
@@ -15,6 +16,7 @@ class timerLogic:
     def __init__(self,master):
         self.master = master
         self.alarm = mixer.Sound("media/alarm.mp3")
+        self.timer_job = None
     def update_timer(self):
         if not self.master.focusdore_active:    
             if self.master.time_left > 0:
@@ -23,7 +25,7 @@ class timerLogic:
                 if self.master.play_alarm_active.get():
                     self.alarm.play()
                 self.skip_time()
-                self.notify("Break complete!", "Time to focus!")
+                self.notify("Focus session complete!", "Time for a break.")
         elif not self.master.on_break:
             if self.master.time_left >= 0:
                 self.master.time_left += 1
@@ -34,25 +36,35 @@ class timerLogic:
                 if self.master.play_alarm_active.get():
                     self.alarm.play()
                 self.skip_time()
-                self.notify("Focus session complete!", "Time for a break.")
+                
+                self.notify("Break complete!", "Time to focus!")
 
+                
         if self.master.running:
             self.mins = self.master.time_left // 60
             self.secs = self.master.time_left % 60
             self.master.timer_frame.timer_label.configure(text=f"{self.mins:02}:{self.secs:02}")
-            self.master.main.after(1000, self.update_timer)
-
+            self.timer_job = self.master.main.after(1000, self.update_timer)  
+        else:
+            self.timer_job = None
     def start_stop(self):
 
         if self.master.running:
             self.master.running = False
             self.master.timer_frame.pressplay.configure(text="Start")
+            if self.timer_job:
+                self.master.main.after_cancel(self.timer_job)
+                self.timer_job = None
         else:
             self.master.running = True
             self.master.timer_frame.pressplay.configure(text="Pause")
-            self.update_timer()
+            if self.timer_job is None:
+                self.update_timer()
     def reset(self):
         self.master.running = False
+        if self.timer_job:
+            self.master.main.after_cancel(self.timer_job)
+            self.timer_job = None
 
         if self.master.on_break == False and not self.master.focusdore_active:
             self.master.time_left = self.master.work_length * 60
@@ -73,18 +85,9 @@ class timerLogic:
     def skip_time(self):
     
         self.master.on_break = not self.master.on_break
-        if self.master.on_break:
-            if self.master.auto_break_active.get():
-                self.master.running = True
-                self.update_timer()
-        else:
-            if self.master.auto_focus_active.get():
-            self.master.running = True
-            self.update_timer()
         if self.master.on_break and self.master.focusdore_active:
-            self.master.time_left = self.master.time_left // 60
-            self.display = self.master.time_left = round(self.master.time_left / 5)
-            self.master.time_left = self.master.time_left * 60
+            self.display = round(self.master.time_left / 60 / 5)
+            self.master.time_left = self.display * 60
             self.master.timer_frame.block_type.configure(text="Break Time")
             self.master.timer_frame.timer_label.configure(text=f"{self.display}:00")
         elif self.master.on_break:
@@ -99,6 +102,18 @@ class timerLogic:
             self.master.time_left = 0
             self.master.timer_frame.timer_label.configure(text=f"00:00")
             self.master.timer_frame.block_type.configure(text="Focus Time")
+        if self.master.on_break:
+            if self.master.auto_break_active.get():
+                self.master.running = True
+                self.master.timer_frame.pressplay.configure(text="Pause")
+                if self.timer_job is None:
+                    self.update_timer()
+        else:
+            if self.master.auto_focus_active.get():
+                self.master.running = True
+                self.master.timer_frame.pressplay.configure(text="Pause")
+                if self.timer_job is None:
+                    self.update_timer()
     def pick_mode(self,choice):
         if choice == "Focustime":
             self.master.focusdore_active = True
@@ -130,7 +145,7 @@ class timerFrame:
         hover_color="#f7a292",
         text_color="#fdf0d5",text="",
         corner_radius=10,width=30,height=30)
-        self.settings_btn.place(x=430,y=12)
+        self.settings_btn.place(x=400,y=12)
 
         self.skip = ctk.CTkButton(master=self.frame, 
         text="Finish Block",
@@ -223,13 +238,17 @@ class task:
     )
         self.new_name = self.dialog.get_input()
         if self.new_name:
-            self.task.configure(text=self.new_name)
+            self.name = self.new_name
+            self.task.configure(text=self.name) 
+            s:elf.app.save()
     def del_task(self):
         
         self.task.destroy()
         self.del_btn.destroy()
-        self.app.task_list.remove(self)
-        self.app.refresh_task_list()
+        if self in self.app.task_list:
+            self.app.task_list.remove(self)
+        self.app.refresh_task_list()    
+        self.app.save()
 
 class taskframe:
     def __init__(self,master):
@@ -240,6 +259,7 @@ class taskframe:
 
 
         self.todo_list = ctk.CTkLabel(self.frame1,
+
         text="To-do List",
         text_color="#fdf0d5",
         fg_color="transparent",
@@ -270,6 +290,7 @@ class taskframe:
         if self.new_name:
             y = task_start_y +len(self.master.task_list) * task_spacing
             self.master.task_list.append(task(self.frame1,self.new_name,y,self.master))
+            self.app.save()
             
 class settingsWindow:
     def __init__(self,master):
@@ -284,7 +305,10 @@ class settingsWindow:
         self.settings.destroy()
         self.settings = None
     def open_settings(self):
-        
+        self.temp_auto_focus.set(self.master.auto_focus_active.get())
+        self.temp_auto_break.set(self.master.auto_break_active.get())
+        self.temp_desk_notif.set(self.master.desk_notif_active.get())
+        self.temp_play_alarm.set(self.master.play_alarm_active.get())
         if self.settings is None or not self.settings.winfo_exists():
             self.settings = ctk.CTkToplevel(self.master.main)
             self.settings.geometry('320x330')
@@ -321,8 +345,8 @@ class settingsWindow:
     def save_settings(self):
         # Saves from input from the text boxes
         try:
-            focus = int(self.focus_min.get() or self.master.work_length)
-            brk = int(self.break_min.get() or self.master.break_length)
+            focus = max(1, int(self.focus_min.get()))
+            brk = max(1, int(self.break_min.get()))
 
             self.master.work_length = focus
             self.master.break_length = brk
@@ -333,6 +357,7 @@ class settingsWindow:
         self.master.auto_break_active.set(self.temp_auto_break.get())
         self.master.desk_notif_active.set(self.temp_desk_notif.get())
         self.master.play_alarm_active.set(self.temp_play_alarm.get())
+        self.master.save()
         self.close_settings()
 class app:
     def __init__(self):
@@ -361,6 +386,8 @@ class app:
         # Create Timer & Task Frames
         self.create_timer_frame()
         self.create_tasks_frame()
+        self.load()
+        self.main.protocol("WM_DELETE_WINDOW", self.on_close)
             
     def create_timer_frame(self):
         self.logic = timerLogic(self)
@@ -372,6 +399,83 @@ class app:
             y = task_start_y + i * task_spacing
             task.task.place(x=27,y=y)
             task.del_btn.place(x=315,y=y)
+    def save(self): 
+        data = {
+        "work_length": self.work_length,
+        "break_length": self.break_length,
+        "focusdore_active": self.focusdore_active,
+
+        "settings": {
+            "auto_focus": self.auto_focus_active.get(),
+            "auto_break": self.auto_break_active.get(),
+            "desktop_notifications": self.desk_notif_active.get(),
+            "play_alarm": self.play_alarm_active.get()
+        },
+
+        "tasks": [
+            {
+                "name": task.name,
+                "completed": bool(task.task.get())
+            }
+            for task in self.task_list
+        ]
+    }
+
+        with open("save.json", "w") as file:
+            json.dump(data, file, indent=4)    
+    def load(self):
+        try:
+            with open("save.json", "r") as file:
+                data = json.load(file)
+
+            self.work_length = data.get("work_length", 25)
+            self.break_length = data.get("break_length", 5)
+            self.focusdore_active = data.get("focusdore_active", False)
+
+            self.time_left = (
+            0 if self.focusdore_active
+            else self.work_length * 60
+            )
+
+            settings = data.get("settings", {})
+
+            self.auto_focus_active.set(settings.get("auto_focus", True))
+            self.auto_break_active.set(settings.get("auto_break", True))
+            self.desk_notif_active.set(settings.get("desktop_notifications", True))
+            self.play_alarm_active.set(settings.get("play_alarm", True))
+
+            self.logic.reset()
+            if self.focusdore_active:
+                self.timer_frame.mode_picker.set("Focustime")
+            else:
+                self.timer_frame.mode_picker.set("Pomodoro")
+
+        
+            self.task_list.clear()
+
+            for task_data in data.get("tasks", []):
+                y = task_start_y + len(self.task_list) * task_spacing
+
+                new_task = task(
+                self.task_frame.frame1,
+                task_data["name"],
+                y,
+                self
+                )
+
+                if task_data.get("completed", False):
+                    new_task.task.select()
+
+                self.task_list.append(new_task)
+
+        except FileNotFoundError:
+            pass
+
+        except json.JSONDecodeError:
+            print("Save file is corrupted.")
+    def on_close(self):
+        self.save()
+        self.main.destroy()
 root = app()
 
 root.main.mainloop()
