@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+
+# Build files
+build/
+dist/
+*.spec
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# User data
+save.json
