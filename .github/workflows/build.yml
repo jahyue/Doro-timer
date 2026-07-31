@@ -1,8 +1,9 @@
 name: Build Doro
 
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -13,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Setup Python
@@ -23,14 +24,22 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install pyinstaller customtkinter pygame pillow plyer
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
 
-    - name: Build app
+    - name: Build Windows
+      if: runner.os == 'Windows'
       run: |
-        pyinstaller --onefile --windowed --add-data "media${{ runner.os == 'Windows' && ';' || ':' }}media" main.py
+        pyinstaller --onefile --windowed --name Doro --icon=media/icon.ico --add-data "media;media" main.py
 
-    - name: Upload artifact
+    - name: Build Linux/macOS
+      if: runner.os != 'Windows'
+      run: |
+        pyinstaller --onefile --windowed --name Doro --add-data "media:media" main.py
+
+    - name: Upload build
       uses: actions/upload-artifact@v4
       with:
-        name: Doro-${{ matrix.os }}
+        name: Doro-${{ runner.os }}
         path: dist/
