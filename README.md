@@ -1,4 +1,5 @@
 # Doro timer
+<img width="976" height="524" alt="image" src="https://github.com/user-attachments/assets/7d9026b2-6ad2-4199-8a14-29669d358af4" />
 
 Doro Timer is a customizable Pomodoro productivity application written entirely in Python. It includes a traditional Pomodoro timer, an adaptive stopwatch mode, task management, desktop notifications, and persistent settings.
 
