@@ -1,15 +1,13 @@
 # Doro timer
 
-A Pomodoro timer made entirely in python
+Doro Timer is a customizable Pomodoro productivity application written entirely in Python. It includes a traditional Pomodoro timer, an adaptive stopwatch mode, task management, desktop notifications, and persistent settings.
 
 <img width="817" height="604" alt="image" src="https://github.com/user-attachments/assets/e0d3f03d-af3b-48df-9636-0ace226b76ec" />
 
-## Installs
-* TBA
 
 ## Features
 
-* Regular pomodor timer with changable work blocks and break blocks 
+* Regular pomodoro timer with changeable work blocks and break blocks 
 
 * an alarm and notifications to notify when the timer ends
 
@@ -17,11 +15,50 @@ A Pomodoro timer made entirely in python
 
 * A stopwatch based pomodoro timer which gives breaks depending on how long you work
 
-* Task and settings that stay throughout settiongs
+* Task and settings that stay throughout settings
+## Usage
+
+1. Choose your preferred timer mode.
+2. Configure work and break durations.
+3. Start the timer.
+4. Manage your tasks in the built-in to-do list.
+5. Receive desktop notifications when sessions end.
 ## Download
 
 Get the latest version here:
 
 https://github.com/jahyue/Doro-timer/releases/latest
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/jahyue/Doro-timer.git
+cd Doro-timer
+```
+
+Install the dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the application:
+
+```bash
+python main.py
+```
+
 # Credits:
-Pyuidesigner
+- PyUiDesigner
+- PyQt6
+
+## Contributing
+
+Contributions, bug reports, and feature requests are welcome.
+
+Feel free to open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License.
